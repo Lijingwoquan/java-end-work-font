@@ -1,0 +1,348 @@
+<template>
+  <div class="goodsList" :class="[sizeObj.textSize]">
+    <div class="goods" :style="goodsSize" v-for="(item, index) in data" :key="index">
+      <div class="goods-info">
+        <div class="name">
+          {{ item.name }}
+        </div>
+        <div class="price">
+          {{ item.price }}元
+        </div>
+      </div>
+      <div class="goods-img">
+        <img :src="item.imgUrl">
+      </div>
+      <div>
+        <div class="add-button">
+          <el-button type="primary" :size="sizeObj.btnSize" @click="pushCar(item)">加入购物车</el-button>
+        </div>
+        <div class="choice-times">
+          {{ item.count }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="car-icon" @click="displayCar">
+    <el-icon :size="sizeObj.iconSize">
+      <ShoppingCartFull />
+    </el-icon>
+  </div>
+
+  <el-drawer class="car-drawer" v-model="drawerRef" title="编辑" direction="btt" size="500px">
+    <div class="car-goods" v-for="(item, index) in carGoods" :key="index">
+      <div class="car-goods-info" :class="sizeObj.textSize" style="width:90%;">
+        <div class="car-goods-name" style="width: 20%;">
+          {{ item.name }}
+        </div>
+        <div>
+          <div>
+            数量
+            <el-input-number class="ml-2" :size="sizeObj.btnSize" v-model="item.count" :min="0"
+              @change="handleCountChange(item)" />
+          </div>
+        </div>
+        <div style="width: 20%;">
+          总价 {{ item.totalPrice }}元
+        </div>
+
+      </div>
+    </div>
+    <div class="flex justify-center items-center" key="btn" style="width: 100%;">
+      <el-button class="buy-button mt-1" type="primary" @click="buyGoods">
+        购买
+      </el-button>
+    </div>
+  </el-drawer>
+</template>
+
+<script setup>
+import { reactive, onMounted, onBeforeMount, ref, watch, computed } from "vue"
+import { toast } from "~/composables/util.js"
+
+const data = ref([
+  {
+    name: "苹果",
+    price: 11,
+    imgUrl: "https://liuzihao.online:8080/api/img/componentCommunicationInVue1.png",
+    count: 0,
+    id: 1
+  },
+  {
+    name: "香蕉",
+    price: 5,
+    imgUrl: "https://liuzihao.online:8080/api/img/love1.jpg",
+    count: 0,
+    id: 2
+  },
+  {
+    name: "芒果",
+    price: 6,
+    imgUrl: "https://liuzihao.online:8080/api/img/justTest.png",
+    count: 0,
+    id: 2154
+
+  }, {
+    name: "苹果aaa",
+    price: 11,
+    imgUrl: "https://liuzihao.online:8080/api/img/componentCommunicationInVue1.png",
+    count: 0,
+    id: 45
+  },
+  {
+    name: "香蕉xxx",
+    price: 5,
+    imgUrl: "https://liuzihao.online:8080/api/img/love1.jpg",
+    count: 0,
+    id: 3
+  },
+  {
+    name: "芒果aaaa",
+    price: 6,
+    imgUrl: "https://liuzihao.online:8080/api/img/justTest.png",
+    count: 0,
+    id: 44
+  },
+  {
+    name: "苹果das",
+    price: 11,
+    imgUrl: "https://liuzihao.online:8080/api/img/componentCommunicationInVue1.png",
+    count: 0,
+    id: 15
+  },
+  {
+    name: "香蕉dsa",
+    price: 5,
+    imgUrl: "https://liuzihao.online:8080/api/img/love1.jpg",
+    count: 0,
+    id: 16
+  },
+  {
+    name: "芒果dasfva",
+    price: 6,
+    imgUrl: "https://liuzihao.online:8080/api/img/justTest.png",
+    count: 0,
+    id: 151
+  }, {
+    name: "苹果aadasdasa",
+    price: 11,
+    imgUrl: "https://liuzihao.online:8080/api/img/componentCommunicationInVue1.png",
+    count: 0,
+    id: 1545
+  },
+  {
+    name: "香蕉das",
+    price: 5,
+    imgUrl: "https://liuzihao.online:8080/api/img/love1.jpg",
+    count: 0,
+    id: 154
+  },
+])
+const sizeObj = reactive({
+  textSize: "",
+  iconSize: "",
+  btnSize: "",
+  numInputSize: "",
+})
+const goodsSize = reactive({
+  height: "",
+  width: ""
+})
+
+const handleResize = () => {
+  const windowWidth = window.innerWidth
+  if (windowWidth < 768) {
+    sizeObj.iconSize = "30px"
+    sizeObj.textSize = "text-xl"
+    sizeObj.btnSize = "small"
+    sizeObj.numInputSize = "small"
+    goodsSize.height = "40vw"
+    goodsSize.width = "40vw"
+  } else {
+    sizeObj.iconSize = "50px"
+    sizeObj.textSize = "text-md"
+    sizeObj.btnSize = "small"
+    sizeObj.numInputSize = "default"
+    goodsSize.height = "15vw"
+    goodsSize.width = "15vw"
+  }
+}
+
+const carGoods = ref([])
+const drawerRef = ref(false)
+
+const pushCar = (item) => {
+  // 查找购物车中是否已经存在该商品
+  const existingItem = carGoods.value.find(goods => goods.name === item.name)
+  const dataItem = data.value.find(goods => goods.name === item.name)
+  dataItem.count++
+  // 如果存在,则增加数量
+  if (existingItem) {
+    existingItem.count++
+    existingItem.totalPrice = existingItem.price * existingItem.count;
+  } else {
+    const newItem = { ...item, count: 1, totalPrice: item.price }
+    carGoods.value.push(newItem);
+  }
+}
+
+const handleCountChange = (item) => {
+  carGoods.value = carGoods.value.filter((item) => item.count > 0)
+  //同步数据
+  data.value.forEach(goods => {
+    if (goods.id === item.id) {
+      goods.count = item.count
+      const existingItem = carGoods.value.find(goods => goods.id === item.id)
+      existingItem.totalPrice = existingItem.price * existingItem.count
+    }
+  })
+}
+
+const displayCar = () => {
+  if (carGoods.value.length > 0) {
+    drawerRef.value = !drawerRef.value
+  } else {
+    toast("购物车为空", "warning")
+  }
+}
+
+const buyGoods = async () => {
+  carGoods.value = []
+  toast("购买成功")
+  await new Promise(resolve => setTimeout(resolve, 500))
+  drawerRef.value = false
+  const promises = data.value.map((item) => {
+    const { count } = item
+    return new Promise((resolve) => {
+      const interval = setInterval(() => {
+        if (item.count > 0) {
+          item.count--
+        }
+        if (item.count === 0) {
+          clearInterval(interval)
+          resolve()
+        }
+      }, 80)
+    })
+  })
+  await Promise.all(promises);
+}
+
+onMounted(() => {
+  // 监听窗口resize事件
+  window.addEventListener('resize', handleResize);
+  handleResize()
+})
+
+onBeforeMount(() => {
+  window.removeEventListener("resize", handleResize)
+})
+</script>
+
+<style>
+  .car-drawer {
+    background:
+      linear-gradient(to right top, rgb(79, 169, 214), rgb(132, 223, 159));
+  }
+
+  .goodsList {
+    @apply flex items-center justify-center;
+    flex-wrap: wrap;
+  }
+
+  .goods {
+    @apply flex relative flex-col justify-start items-center;
+    border: 1px dotted rgba(128, 155, 131, 0.516);
+    margin: 2vw;
+    background:
+      linear-gradient(rgba(121, 211, 227, 0.543), rgba(61, 133, 221, 0.479));
+    box-sizing: border-box;
+    border-radius: 15px;
+  }
+
+  .goods-info {
+    @apply flex justify-between;
+    width: 100%;
+    height: 20%;
+    margin-bottom: 5px
+  }
+
+  .goods-info .name {
+    @apply inline-block ml-3 mt-3;
+    color: rgb(92, 98, 188);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: auto;
+  }
+
+  .goods-info .price {
+    @apply inline-block ml-3 mt-3;
+    color: rgb(186, 76, 46);
+    min-width: 50px;
+  }
+
+  .goods-img {
+    @apply px-3;
+    height: 60%;
+    width: auto;
+  }
+
+  .goods-img img {
+    @apply pb-1;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .car-icon {
+    @apply fixed;
+    right: 5vw;
+    bottom: 200px;
+    z-index: 100;
+  }
+
+  .car-goods {
+    @apply flex justify-center items-center my-3 pb-2;
+    width: 100%;
+    border-bottom: 1px solid rgb(134, 93, 174);
+    box-sizing: border-box;
+  }
+
+
+  .car-goods-info {
+    @apply flex items-center justify-between space-x-2;
+  }
+
+  .car-goods-name {
+    @apply inline-block;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: auto;
+  }
+
+  .add-button {
+    @apply flex justify-center items-center;
+    position: absolute;
+    height: 10%;
+    left: 50%;
+    right: 50%;
+    bottom: 8px;
+  }
+
+  .choice-times {
+    @apply absolute flex justify-center items-center;
+    bottom: 0px;
+    right: 0px;
+    color: rgba(217, 22, 181, 0.829);
+    background-color: rgba(202, 213, 241, 0.53);
+    border: 1px solid rgb(185, 98, 98);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+  }
+
+  .buy-button {
+    @apply text-light-300 hover:text-red-900 !important;
+  }
+
+</style>
