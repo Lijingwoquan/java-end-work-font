@@ -60,84 +60,11 @@
 import { reactive, onMounted, onBeforeMount, ref, watch, computed } from "vue"
 import { toast } from "~/composables/util.js"
 
-const data = ref([
-  {
-    name: "苹果",
-    price: 11,
-    imgUrl: "https://liuzihao.online:8080/api/img/componentCommunicationInVue1.png",
-    count: 0,
-    id: 1
-  },
-  {
-    name: "香蕉",
-    price: 5,
-    imgUrl: "https://liuzihao.online:8080/api/img/love1.jpg",
-    count: 0,
-    id: 2
-  },
-  {
-    name: "芒果",
-    price: 6,
-    imgUrl: "https://liuzihao.online:8080/api/img/justTest.png",
-    count: 0,
-    id: 2154
+import {
+  getGoods,
+} from "~/api/common.js";
+const data = ref([])
 
-  }, {
-    name: "苹果aaa",
-    price: 11,
-    imgUrl: "https://liuzihao.online:8080/api/img/componentCommunicationInVue1.png",
-    count: 0,
-    id: 45
-  },
-  {
-    name: "香蕉xxx",
-    price: 5,
-    imgUrl: "https://liuzihao.online:8080/api/img/love1.jpg",
-    count: 0,
-    id: 3
-  },
-  {
-    name: "芒果aaaa",
-    price: 6,
-    imgUrl: "https://liuzihao.online:8080/api/img/justTest.png",
-    count: 0,
-    id: 44
-  },
-  {
-    name: "苹果das",
-    price: 11,
-    imgUrl: "https://liuzihao.online:8080/api/img/componentCommunicationInVue1.png",
-    count: 0,
-    id: 15
-  },
-  {
-    name: "香蕉dsa",
-    price: 5,
-    imgUrl: "https://liuzihao.online:8080/api/img/love1.jpg",
-    count: 0,
-    id: 16
-  },
-  {
-    name: "芒果dasfva",
-    price: 6,
-    imgUrl: "https://liuzihao.online:8080/api/img/justTest.png",
-    count: 0,
-    id: 151
-  }, {
-    name: "苹果aadasdasa",
-    price: 11,
-    imgUrl: "https://liuzihao.online:8080/api/img/componentCommunicationInVue1.png",
-    count: 0,
-    id: 1545
-  },
-  {
-    name: "香蕉das",
-    price: 5,
-    imgUrl: "https://liuzihao.online:8080/api/img/love1.jpg",
-    count: 0,
-    id: 154
-  },
-])
 const sizeObj = reactive({
   textSize: "",
   iconSize: "",
@@ -173,8 +100,8 @@ const drawerRef = ref(false)
 
 const pushCar = (item) => {
   // 查找购物车中是否已经存在该商品
-  const existingItem = carGoods.value.find(goods => goods.name === item.name)
-  const dataItem = data.value.find(goods => goods.name === item.name)
+  const existingItem = carGoods.value.find(goods => goods.id === item.id)
+  const dataItem = data.value.find(goods => goods.id === item.id)
   dataItem.count++
   // 如果存在,则增加数量
   if (existingItem) {
@@ -232,11 +159,21 @@ onMounted(() => {
   // 监听窗口resize事件
   window.addEventListener('resize', handleResize);
   handleResize()
+  getGoods().then(res => {
+    toast("添加商品成功", "success")
+    data.value = res.data.msg.map(item => ({
+      ...item,
+      count: 0
+    }));
+  }).catch(err => {
+    toast("添加商品失败", "error")
+  })
 })
 
 onBeforeMount(() => {
   window.removeEventListener("resize", handleResize)
 })
+
 </script>
 
 <style>

@@ -39,7 +39,8 @@
             </el-table-column>
         </el-table>
     </el-card>
-    <el-drawer v-model="drawerRef" title="编辑" :destroy-on-close="true" direction="rtl">
+
+    <el-drawer v-model="drawerRef" title="编辑" :destroy-on-close="true" direction="rtl" size="300px">
         <div class="flex flex-col justify-between" style="height: 100%;">
             <el-form :model="form" ref="formRef" label-width="auto" class="space-y-10">
                 <el-form-item label="商品名称" prop="name">
@@ -53,104 +54,40 @@
                 </el-form-item>
             </el-form>
             <el-button class="bottom-0" type="primary" size="large" @click="onSubmit"
-                style="width: 100%;">更新</el-button>
+                style="width: 100%;">确定</el-button>
         </div>
     </el-drawer>
 </template>
 
 <script setup>
-import { reactive, ref } from "vue"
+import { onMounted, reactive, ref } from "vue"
+import {
+    addGoods,
+} from "~/api/manager.js";
+import {
+    getGoods,
+} from "~/api/common.js";
 
-const data = ref([
-    {
-        name: "苹果",
-        price: 11,
-        imgUrl: "https://liuzihao.online:8080/api/img/componentCommunicationInVue1.png",
-        count: 0,
-        id: 1
-    },
-    {
-        name: "香蕉",
-        price: 5,
-        imgUrl: "https://liuzihao.online:8080/api/img/love1.jpg",
-        count: 0,
-        id: 2
-    },
-    {
-        name: "芒果",
-        price: 6,
-        imgUrl: "https://liuzihao.online:8080/api/img/justTest.png",
-        count: 0,
-        id: 2
+import { toast } from "~/composables/util.js"
 
-    }, {
-        name: "苹果aaa",
-        price: 11,
-        imgUrl: "https://liuzihao.online:8080/api/img/componentCommunicationInVue1.png",
-        count: 0,
-        id: 45
-    },
-    {
-        name: "香蕉xxx",
-        price: 5,
-        imgUrl: "https://liuzihao.online:8080/api/img/love1.jpg",
-        count: 0,
-        id: 3
-    },
-    {
-        name: "芒果aaaa",
-        price: 6,
-        imgUrl: "https://liuzihao.online:8080/api/img/justTest.png",
-        count: 0,
-        id: 44
-    },
-    {
-        name: "苹果das",
-        price: 11,
-        imgUrl: "https://liuzihao.online:8080/api/img/componentCommunicationInVue1.png",
-        count: 0,
-        id: 15
-    },
-    {
-        name: "香蕉dsa",
-        price: 5,
-        imgUrl: "https://liuzihao.online:8080/api/img/love1.jpg",
-        count: 0,
-        id: 16
-    },
-    {
-        name: "芒果dasfva",
-        price: 6,
-        imgUrl: "https://liuzihao.online:8080/api/img/justTest.png",
-        count: 0,
-        id: 151
-    }, {
-        name: "苹果aadasdasa",
-        price: 11,
-        imgUrl: "https://liuzihao.online:8080/api/img/componentCommunicationInVue1.png",
-        count: 0,
-        id: 1545
-    },
-    {
-        name: "香蕉das",
-        price: 5,
-        imgUrl: "https://liuzihao.online:8080/api/img/love1.jpg",
-        count: 0,
-        id: 154
-    },
-])
+
+const data = ref([])
+
 const form = reactive({
     name: "",
     price: 0,
     imgUrl: "",
     id: 0
 })
+
+
 const defaultForm = reactive({
     name: "",
     price: 0,
     imgUrl: "",
     id: 0
 })
+
 
 const formRef = ref(null)
 const drawerRef = ref(false)
@@ -173,6 +110,15 @@ const openRrawer = (goods) => {
 const onSubmit = () => {
 
 }
+
+onMounted(() => {
+    getGoods().then(res => {
+        toast("添加商品成功", "success")
+        data.value = res.data.msg
+    }).catch(err => {
+        toast("添加商品失败", "error")
+    })
+})
 </script>
 
 <style scoped>
