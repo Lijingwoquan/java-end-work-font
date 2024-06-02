@@ -1,27 +1,34 @@
 <template>
-  <div class="goodsList" :class="[sizeObj.textSize]">
-    <div class="goods" :style="goodsSize" v-for="(item, index) in data" :key="index">
-      <div class="goods-info">
-        <div class="name">
-          {{ item.name }}
+  <el-card style="max-width: 100%">
+    <div class="goodsList" v-loading="tableLoading" :class="[sizeObj.textSize]">
+      <el-card class="goods" :style="goodsSize" style="max-width: 100%" v-for="(item, index) in data" :key="index">
+        <div class="goods-info">
+          <div class="name">
+            {{ item.name }}
+          </div>
+          <div class="price">
+            {{ item.price }}元
+          </div>
         </div>
-        <div class="price">
-          {{ item.price }}元
+        <div class="goods-img">
+          <img :src="item.imgUrl">
         </div>
-      </div>
-      <div class="goods-img">
-        <img :src="item.imgUrl">
-      </div>
-      <div>
-        <div class="add-button">
-          <el-button type="primary" :size="sizeObj.btnSize" @click="pushCar(item)">加入购物车</el-button>
+        <div>
+          <div class="add-button">
+            <el-button type="primary" :size="sizeObj.btnSize" @click="pushCar(item)">加入购物车</el-button>
+          </div>
+          <div class="choice-times">
+            {{ item.count }}
+          </div>
         </div>
-        <div class="choice-times">
-          {{ item.count }}
-        </div>
-      </div>
+      </el-card>
     </div>
-  </div>
+
+    <div class="mt-5">
+      <el-pagination class="flex justify-center items-center" background layout="prev, pager, next"
+        :current-page="currentPage" :page-count="pageMax" @update:current-page="changePage" />
+    </div>
+  </el-card>
 
   <div class="car-icon" @click="displayCar">
     <el-icon :size="sizeObj.iconSize">
@@ -59,11 +66,21 @@
 <script setup>
 import { reactive, onMounted, onBeforeMount, ref, watch, computed } from "vue"
 import { toast } from "~/composables/util.js"
-
 import {
   getGoods,
 } from "~/api/common.js";
-const data = ref([])
+import { useCommonTable } from "~/composables/useCommonTable.js"
+const {
+  data,
+  tableLoading,
+  drawerRef,
+  pageMax,
+  currentPage,
+  handelGetGoods,
+  changePage
+} = useCommonTable({
+  getList: getGoods,
+})
 
 const sizeObj = reactive({
   textSize: "",
@@ -71,6 +88,7 @@ const sizeObj = reactive({
   btnSize: "",
   numInputSize: "",
 })
+
 const goodsSize = reactive({
   height: "",
   width: ""
@@ -96,13 +114,13 @@ const handleResize = () => {
 }
 
 const carGoods = ref([])
-const drawerRef = ref(false)
 
 const pushCar = (item) => {
+  let dataItem = data.value.find(goods => goods.id === item.id);
+
+  dataItem.count = (dataItem.count || 0) + 1;
   // 查找购物车中是否已经存在该商品
   const existingItem = carGoods.value.find(goods => goods.id === item.id)
-  const dataItem = data.value.find(goods => goods.id === item.id)
-  dataItem.count++
   // 如果存在,则增加数量
   if (existingItem) {
     existingItem.count++
@@ -159,29 +177,15 @@ onMounted(() => {
   // 监听窗口resize事件
   window.addEventListener('resize', handleResize);
   handleResize()
-  getGoods().then(res => {
-    toast("添加商品成功", "success")
-    data.value = res.data.msg.map(item => ({
-      ...item,
-      count: 0
-    }));
-  }).catch(err => {
-    toast("添加商品失败", "error")
-  })
+  handelGetGoods(true)
 })
 
 onBeforeMount(() => {
   window.removeEventListener("resize", handleResize)
 })
-
 </script>
 
-<style>
-  .car-drawer {
-    background:
-      linear-gradient(to right top, rgb(79, 169, 214), rgb(132, 223, 159));
-  }
-
+<style scoped>
   .goodsList {
     @apply flex items-center justify-center;
     flex-wrap: wrap;
@@ -229,6 +233,11 @@ onBeforeMount(() => {
     width: 100%;
     height: 100%;
     object-fit: contain;
+  }
+
+  .car-drawer {
+    background:
+      linear-gradient(to right top, rgb(79, 169, 214), rgb(132, 223, 159));
   }
 
   .car-icon {

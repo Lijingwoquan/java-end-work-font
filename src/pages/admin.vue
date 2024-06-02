@@ -3,9 +3,8 @@
         <div class="flex justify-end mb-5">
             <el-button type="primary" size="large" @click="openRrawer()">新增</el-button>
         </div>
-        <el-table :data="data" stripe style="width: 100%">
+        <el-table :data="data" stripe style="width: 100%" v-loading="tableLoading">
             <el-table-column prop="name" label="商品名称" />
-
             <el-table-column prop="price" label="商品价格">
                 <template #default="scope">
                     <div class="flex items-center text-lg" style="height: 100%;width: 100%;color: rgb(48, 48, 169);">
@@ -38,8 +37,11 @@
                 </template>
             </el-table-column>
         </el-table>
+        <div class="mt-5">
+            <el-pagination class="flex justify-center items-center" background layout="prev, pager, next"
+                :current-page="currentPage" :page-count="pageMax" @update:current-page="changePage" />
+        </div>
     </el-card>
-
     <el-drawer v-model="drawerRef" title="编辑" :destroy-on-close="true" direction="rtl" size="300px">
         <div class="flex flex-col justify-between" style="height: 100%;">
             <el-form :model="form" ref="formRef" label-width="auto" class="space-y-10">
@@ -60,69 +62,43 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from "vue"
-import {
-    addGoods,
-} from "~/api/manager.js";
+import { onMounted } from "vue"
 import {
     getGoods,
 } from "~/api/common.js";
-
-import { toast } from "~/composables/util.js"
-
-
-const data = ref([])
-
-const form = reactive({
-    name: "",
-    price: 0,
-    imgUrl: "",
-    id: 0
+import {
+    addGoods,
+    updateGoods,
+    delateGoods
+} from "~/api/manager.js";
+import { useCommonTable } from "~/composables/useCommonTable.js"
+const {
+    data,
+    form,
+    tableLoading,
+    formRef,
+    drawerRef,
+    pageMax,
+    currentPage,
+    handelDelete,
+    handelGetGoods,
+    openRrawer,
+    onSubmit,
+    changePage
+} = useCommonTable({
+    getList: getGoods,
+    add: addGoods,
+    update: updateGoods,
+    delate: delateGoods
 })
-
-
-const defaultForm = reactive({
-    name: "",
-    price: 0,
-    imgUrl: "",
-    id: 0
-})
-
-
-const formRef = ref(null)
-const drawerRef = ref(false)
-
-const handelDelete = (item) => {
-    data.value = data.value.filter((goods) => goods.id !== item.id)
-}
-
-const openRrawer = (goods) => {
-    drawerRef.value = true
-    if (goods) {
-        Object.assign(form, goods);
-    } else {
-        for (const key in defaultForm) {
-            form[key] = defaultForm[key]
-        }
-    }
-}
-
-const onSubmit = () => {
-
-}
 
 onMounted(() => {
-    getGoods().then(res => {
-        toast("添加商品成功", "success")
-        data.value = res.data.msg
-    }).catch(err => {
-        toast("添加商品失败", "error")
-    })
+    handelGetGoods(true)
 })
+
 </script>
 
 <style scoped>
-
     .goods-img {
         height: 150px;
         width: auto;

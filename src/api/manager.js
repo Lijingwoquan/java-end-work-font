@@ -1,18 +1,17 @@
 import axios from "~/axios.js";
-import { toast } from "~/composables/util.js"
-axios.defaults.headers.post['Content-Type'] = 'application/json';
 
-export function addGoods(name, price, imgUrl) {
-    return axios.post('/manager/addGoods', {
-        name,
-        price,
-        imgUrl
-    }).then(res => {
-        toast("添加商品成功", "success")
-        resolve(res)
-    }).catch(err => {
-        toast("添加商品失败", "error")
-        reject(err)
-    })
+export function addGoods(item) {
+    return axios.post('/manager/addGoods', item)
 }
 
+export function updateGoods(form) {
+    return axios.post('/manager/updateGoods', form)
+}
+
+export function delateGoods(id) {
+    return axios.delete('/manager/deleteGoods', {
+        data: {
+            id: id
+        }
+    })
+}
