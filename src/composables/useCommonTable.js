@@ -21,7 +21,6 @@ export function useCommonTable(opt = {}) {
     const pageMax = ref(0)
     const currentPage = ref(1)
     const handelDelete = (item) => {
-        tableLoading.value = true
         opt.delate(item.id)
             .then(() => {
                 toast("删除成功")
@@ -29,7 +28,6 @@ export function useCommonTable(opt = {}) {
                 toast("删除失败", "error")
             }).finally(() => {
                 handelGetGoods()
-                tableLoading.value = false
             })
     }
     const handelGetGoods = async (flag) => {

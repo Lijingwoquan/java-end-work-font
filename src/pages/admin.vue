@@ -95,13 +95,12 @@ const {
 onMounted(() => {
     handelGetGoods(true)
 })
-
 </script>
 
 <style scoped>
     .goods-img {
-        height: 150px;
-        width: auto;
+        height: 200px;
+        width: 200px;
     }
 
     .goods-img img {

@@ -34,7 +34,8 @@
     </el-icon>
   </div>
 
-  <el-drawer class="car-drawer" v-model="drawerRef" title="编辑" direction="btt" size="500px">
+  <el-drawer style="background:linear-gradient(to right top, rgb(79, 169, 214), rgb(132, 223, 159)) !important;"
+    v-model="drawerRef" title="编辑" direction="btt" size="500px">
     <div class="car-goods" v-for="(item, index) in carGoods" :key="index">
       <div class="car-goods-info" :class="sizeObj.textSize" style="width:90%;">
         <div class="car-goods-name" style="width: 20%;">
@@ -54,7 +55,7 @@
       </div>
     </div>
     <div class="flex justify-center items-center" key="btn" style="width: 100%;">
-      <el-button class="buy-button mt-1" type="primary" @click="buyGoods">
+      <el-button class="buy-button mt-1" type="primary" @click="handelBuyGoods">
         购买
       </el-button>
     </div>
@@ -62,12 +63,13 @@
 </template>
 
 <script setup>
-import { reactive, onMounted, onBeforeMount, ref, watch, computed } from "vue"
+import { reactive, onMounted, onBeforeMount, ref } from "vue"
 import { toast } from "~/composables/util.js"
-import {
-  getGoods,
-} from "~/api/common.js";
+import { getGoods } from "~/api/common.js";
+import { buyGoods } from "~/api/user.js";
 import { useCommonTable } from "~/composables/useCommonTable.js"
+import { useResize } from "~/composables/useResize.js"
+
 const {
   data,
   tableLoading,
@@ -80,51 +82,30 @@ const {
   getList: getGoods,
 })
 
-const sizeObj = reactive({
-  textSize: "",
-  iconSize: "",
-  btnSize: "",
-  numInputSize: "",
-})
-
 const goodsSize = reactive({
   height: "",
-  width: ""
+  width: "",
+  mobile: "50vw",
+  computer: "35vh"
 })
-
 const goodsTimes = reactive({
   height: "",
-  width: ""
+  width: "",
+  mobile: "30px",
+  computer: "34px"
 })
-
-const handleResize = () => {
-  const windowWidth = window.innerWidth
-  if (windowWidth < 768) {
-    sizeObj.iconSize = "30px"
-    sizeObj.textSize = "text-xl"
-    sizeObj.btnSize = "small"
-    sizeObj.numInputSize = "small"
-    goodsSize.height = "50vw"
-    goodsSize.width = "50vw"
-    goodsTimes.height = "30px"
-    goodsTimes.width = "30px"
-  } else {
-    sizeObj.iconSize = "50px"
-    sizeObj.textSize = "text-md"
-    sizeObj.btnSize = "default"
-    sizeObj.numInputSize = "default"
-    goodsSize.height = "35vh"
-    goodsSize.width = "35vh"
-    goodsTimes.height = "34px"
-    goodsTimes.width = "34px"
-  }
-}
+const {
+  sizeObj,
+  handleResize
+} = useResize({
+  item: goodsSize,
+  corner: goodsTimes,
+})
 
 const carGoods = ref([])
 
 const pushCar = (item) => {
   let dataItem = data.value.find(goods => goods.id === item.id);
-
   dataItem.count = (dataItem.count || 0) + 1;
   // 查找购物车中是否已经存在该商品
   const existingItem = carGoods.value.find(goods => goods.id === item.id)
@@ -158,26 +139,32 @@ const displayCar = () => {
   }
 }
 
-const buyGoods = async () => {
-  carGoods.value = []
-  toast("购买成功")
-  await new Promise(resolve => setTimeout(resolve, 500))
-  drawerRef.value = false
-  const promises = data.value.map((item) => {
-    const { count } = item
-    return new Promise((resolve) => {
-      const interval = setInterval(() => {
-        if (item.count > 0) {
-          item.count--
-        }
-        if (item.count === 0) {
-          clearInterval(interval)
-          resolve()
-        }
-      }, 80)
+const handelBuyGoods = async () => {
+  buyGoods(carGoods.value)
+    .then(async (res) => {
+      toast("购买成功")
+      carGoods.value = []
+      await new Promise(resolve => setTimeout(resolve, 300))
+      drawerRef.value = false
+      const promises = data.value.map((item) => {
+        const { count } = item
+        return new Promise((resolve) => {
+          const interval = setInterval(() => {
+            if (item.count > 0) {
+              item.count--
+            }
+            if (item.count === 0) {
+              clearInterval(interval)
+              resolve()
+            }
+          }, 80)
+        })
+      })
+      await Promise.all(promises)
     })
-  })
-  await Promise.all(promises);
+    .catch(err => {
+      toast("购买失败", "error")
+    })
 }
 
 onMounted(() => {
@@ -186,7 +173,6 @@ onMounted(() => {
   handelGetGoods(true)
   handleResize()
 })
-
 onBeforeMount(() => {
   window.removeEventListener("resize", handleResize)
 })
@@ -263,10 +249,6 @@ onBeforeMount(() => {
 
   }
 
-  .car-drawer {
-    background:
-      linear-gradient(to right top, rgb(79, 169, 214), rgb(132, 223, 159));
-  }
 
   .car-icon {
     @apply fixed;
@@ -282,7 +264,6 @@ onBeforeMount(() => {
     box-sizing: border-box;
   }
 
-
   .car-goods-info {
     @apply flex items-center justify-between space-x-2;
   }
@@ -293,8 +274,6 @@ onBeforeMount(() => {
     text-overflow: ellipsis;
     overflow: auto;
   }
-
-
 
 
   .buy-button {
