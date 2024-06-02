@@ -65,7 +65,7 @@
 <script setup>
 import { reactive, onMounted, onBeforeMount, ref } from "vue"
 import { toast } from "~/composables/util.js"
-import { getGoods } from "~/api/common.js";
+import { getGoods } from "~/api/user.js";
 import { buyGoods } from "~/api/user.js";
 import { useCommonTable } from "~/composables/useCommonTable.js"
 import { useResize } from "~/composables/useResize.js"

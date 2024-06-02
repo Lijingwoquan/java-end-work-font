@@ -8,10 +8,13 @@ export function updateGoods(form) {
     return axios.post('/manager/updateGoods', form)
 }
 
-export function delateGoods(id) {
-    return axios.delete('/manager/deleteGoods', {
-        data: {
-            id: id
-        }
+export function changeGoodsStatus(id, status) {
+    return axios.put('/manager/changeStatusGoods', {
+        id,
+        status
     })
+}
+
+export function getGoods() {
+    return axios.get('/manager/getGoods')
 }

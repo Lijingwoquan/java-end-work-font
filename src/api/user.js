@@ -5,3 +5,7 @@ export function buyGoods(goodsList) {
         goodsList
     })
 }
+
+export function getGoods() {
+    return axios.get('/user/getGoods')
+}

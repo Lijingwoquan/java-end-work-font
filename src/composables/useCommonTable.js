@@ -20,12 +20,13 @@ export function useCommonTable(opt = {}) {
     const drawerRef = ref(false)
     const pageMax = ref(0)
     const currentPage = ref(1)
-    const handelDelete = (item) => {
-        opt.delate(item.id)
+    const handelChangeStauts = (status, id) => {
+        console.log(status)
+        opt.changeStatus(id, status)
             .then(() => {
-                toast("删除成功")
+                toast("修改状态成功")
             }).catch(() => {
-                toast("删除失败", "error")
+                toast("修改状态失败", "error")
             }).finally(() => {
                 handelGetGoods()
             })
@@ -98,7 +99,7 @@ export function useCommonTable(opt = {}) {
         drawerRef,
         pageMax,
         currentPage,
-        handelDelete,
+        handelChangeStauts,
         handelGetGoods,
         openRrawer,
         onSubmit,

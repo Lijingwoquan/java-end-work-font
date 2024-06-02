@@ -12,6 +12,13 @@
                     </div>
                 </template>
             </el-table-column>
+            <el-table-column prop="count" label="商品销量">
+                <template #default="scope">
+                    <div class="flex items-center text-lg" style="height: 100%;width: 100%;color: rgb(48, 48, 169);">
+                        {{ scope.row.count }}
+                    </div>
+                </template>
+            </el-table-column>
             <el-table-column prop="imgUrl" label="商品图片">
                 <template #default="scope">
                     <div class="goods-img">
@@ -24,16 +31,10 @@
                     <el-button type="primary" size="default" @click="openRrawer(scope.row)">编辑商品</el-button>
                 </template>
             </el-table-column>
-            <el-table-column prop="name" label="删除" width="150px">
+            <el-table-column prop="delete" label="状态" width="150px">
                 <template #default="scope">
-                    <span @click.stop="() => { }">
-                        <el-popconfirm title="是否要删除该管理员?" confirm-button-text="确定" cancel-button-text="取消"
-                            @confirm="handelDelete(scope.row)">
-                            <template #reference>
-                                <el-button type="primary" size="default" @click="">删除商品</el-button>
-                            </template>
-                        </el-popconfirm>
-                    </span>
+                    <el-switch v-loading="tableLoading" :modelValue="scope.row.status" size="large" :active-value="0"
+                        :inactive-value="1" @change="handelChangeStauts($event,scope.row.id)" />
                 </template>
             </el-table-column>
         </el-table>
@@ -63,15 +64,14 @@
 
 <script setup>
 import { onMounted } from "vue"
-import {
-    getGoods,
-} from "~/api/common.js";
+import { getGoods } from "~/api/manager.js";
 import {
     addGoods,
     updateGoods,
-    delateGoods
+    changeGoodsStatus
 } from "~/api/manager.js";
 import { useCommonTable } from "~/composables/useCommonTable.js"
+
 const {
     data,
     form,
@@ -80,7 +80,7 @@ const {
     drawerRef,
     pageMax,
     currentPage,
-    handelDelete,
+    handelChangeStauts,
     handelGetGoods,
     openRrawer,
     onSubmit,
@@ -89,7 +89,7 @@ const {
     getList: getGoods,
     add: addGoods,
     update: updateGoods,
-    delate: delateGoods
+    changeStatus: changeGoodsStatus
 })
 
 onMounted(() => {
