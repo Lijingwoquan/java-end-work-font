@@ -1,7 +1,7 @@
 <template>
   <el-card style="max-width: 100%">
     <div class="goodsList" v-loading="tableLoading" :class="[sizeObj.textSize]">
-      <el-card class="goods" :style="goodsSize" style="max-width: 100%" v-for="(item, index) in data" :key="index">
+      <el-card class="goods" :style="goodsSize" v-for="(item, index) in data" :key="index">
         <div class="goods-info">
           <div class="name">
             {{ item.name }}
@@ -13,13 +13,11 @@
         <div class="goods-img">
           <img :src="item.imgUrl">
         </div>
-        <div>
-          <div class="add-button">
-            <el-button type="primary" :size="sizeObj.btnSize" @click="pushCar(item)">加入购物车</el-button>
-          </div>
-          <div class="choice-times">
-            {{ item.count }}
-          </div>
+        <div class="goods-button">
+          <el-button type="primary" :size="sizeObj.btnSize" @click="pushCar(item)">加入购物车</el-button>
+        </div>
+        <div class="goods-times" :style="goodsTimes">
+          {{ item.count }}
         </div>
       </el-card>
     </div>
@@ -94,6 +92,11 @@ const goodsSize = reactive({
   width: ""
 })
 
+const goodsTimes = reactive({
+  height: "",
+  width: ""
+})
+
 const handleResize = () => {
   const windowWidth = window.innerWidth
   if (windowWidth < 768) {
@@ -101,15 +104,19 @@ const handleResize = () => {
     sizeObj.textSize = "text-xl"
     sizeObj.btnSize = "small"
     sizeObj.numInputSize = "small"
-    goodsSize.height = "40vw"
-    goodsSize.width = "40vw"
+    goodsSize.height = "50vw"
+    goodsSize.width = "50vw"
+    goodsTimes.height = "30px"
+    goodsTimes.width = "30px"
   } else {
     sizeObj.iconSize = "50px"
     sizeObj.textSize = "text-md"
-    sizeObj.btnSize = "small"
+    sizeObj.btnSize = "default"
     sizeObj.numInputSize = "default"
-    goodsSize.height = "15vw"
-    goodsSize.width = "15vw"
+    goodsSize.height = "35vh"
+    goodsSize.width = "35vh"
+    goodsTimes.height = "34px"
+    goodsTimes.width = "34px"
   }
 }
 
@@ -176,8 +183,8 @@ const buyGoods = async () => {
 onMounted(() => {
   // 监听窗口resize事件
   window.addEventListener('resize', handleResize);
-  handleResize()
   handelGetGoods(true)
+  handleResize()
 })
 
 onBeforeMount(() => {
@@ -186,6 +193,11 @@ onBeforeMount(() => {
 </script>
 
 <style scoped>
+  :deep(.el-card__body) {
+    height: 100%;
+    width: 100%;
+  }
+
   .goodsList {
     @apply flex items-center justify-center;
     flex-wrap: wrap;
@@ -209,7 +221,7 @@ onBeforeMount(() => {
   }
 
   .goods-info .name {
-    @apply inline-block ml-3 mt-3;
+    @apply inline-block;
     color: rgb(92, 98, 188);
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -217,13 +229,10 @@ onBeforeMount(() => {
   }
 
   .goods-info .price {
-    @apply inline-block ml-3 mt-3;
     color: rgb(186, 76, 46);
-    min-width: 50px;
   }
 
   .goods-img {
-    @apply px-3;
     height: 60%;
     width: auto;
   }
@@ -233,6 +242,25 @@ onBeforeMount(() => {
     width: 100%;
     height: 100%;
     object-fit: contain;
+  }
+
+  .goods-button {
+    @apply flex justify-center items-center;
+    position: absolute;
+    height: 25%;
+    left: 50%;
+    right: 50%;
+  }
+
+  .goods-times {
+    @apply absolute flex justify-center items-center;
+    bottom: 0px;
+    right: 0px;
+    color: rgba(217, 22, 181, 0.829);
+    background-color: rgba(202, 213, 241, 0.53);
+    border: 1px solid rgb(185, 98, 98);
+    border-radius: 50%;
+
   }
 
   .car-drawer {
@@ -266,26 +294,8 @@ onBeforeMount(() => {
     overflow: auto;
   }
 
-  .add-button {
-    @apply flex justify-center items-center;
-    position: absolute;
-    height: 10%;
-    left: 50%;
-    right: 50%;
-    bottom: 8px;
-  }
 
-  .choice-times {
-    @apply absolute flex justify-center items-center;
-    bottom: 0px;
-    right: 0px;
-    color: rgba(217, 22, 181, 0.829);
-    background-color: rgba(202, 213, 241, 0.53);
-    border: 1px solid rgb(185, 98, 98);
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-  }
+
 
   .buy-button {
     @apply text-light-300 hover:text-red-900 !important;
