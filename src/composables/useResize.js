@@ -16,19 +16,27 @@ export function useResize(obj = {}) {
             sizeObj.textSize = "text-xl"
             sizeObj.btnSize = "small"
             sizeObj.numInputSize = "small"
-            obj.item.height = obj.item.mobile
-            obj.item.width = obj.item.mobile
-            obj.corner.height = obj.corner.mobile
-            obj.corner.width = obj.corner.mobile
+            if (obj.item) {
+                obj.item.height = obj.item.mobile
+                obj.item.width = obj.item.mobile
+            }
+            if (obj.corner) {
+                obj.corner.height = obj.corner.mobile
+                obj.corner.width = obj.corner.mobile
+            }
         } else {
             sizeObj.iconSize = "50px"
             sizeObj.textSize = "text-md"
             sizeObj.btnSize = "default"
             sizeObj.numInputSize = "default"
-            obj.item.height = obj.item.computer
-            obj.item.width = obj.item.computer
-            obj.corner.height = obj.corner.computer
-            obj.corner.width = obj.corner.computer
+            if (obj.item) {
+                obj.item.height = obj.item.computer
+                obj.item.width = obj.item.computer
+            }
+            if (obj.corner) {
+                obj.corner.height = obj.corner.computer
+                obj.corner.width = obj.corner.computer
+            }
         }
     }
 

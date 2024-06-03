@@ -14,6 +14,7 @@ export function useCommonTable(opt = {}) {
         imgUrl: "",
         id: 0
     })
+    const imageUrl = ref('')
     const tableLoading = ref(true)
     const submitType = ref("new")
     const formRef = ref(null)
@@ -21,7 +22,6 @@ export function useCommonTable(opt = {}) {
     const pageMax = ref(0)
     const currentPage = ref(1)
     const handelChangeStauts = (status, id) => {
-        console.log(status)
         opt.changeStatus(id, status)
             .then(() => {
                 toast("修改状态成功")
@@ -58,6 +58,7 @@ export function useCommonTable(opt = {}) {
         drawerRef.value = true
         submitType.value = "new"
         if (goods) {
+            imageUrl.value = goods.imgUrl
             Object.assign(form, goods);
             submitType.value = "update"
         } else {
@@ -103,6 +104,7 @@ export function useCommonTable(opt = {}) {
         handelGetGoods,
         openRrawer,
         onSubmit,
-        changePage
+        changePage,
+        imageUrl
     }
 }

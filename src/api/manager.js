@@ -1,4 +1,5 @@
 import axios from "~/axios.js";
+import { toast } from "~/composables/util.js"
 
 export function addGoods(item) {
     return axios.post('/manager/addGoods', item)
@@ -18,3 +19,5 @@ export function changeGoodsStatus(id, status) {
 export function getGoods() {
     return axios.get('/manager/getGoods')
 }
+
+

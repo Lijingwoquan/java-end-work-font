@@ -101,7 +101,6 @@ const {
   item: goodsSize,
   corner: goodsTimes,
 })
-
 const carGoods = ref([])
 
 const pushCar = (item) => {
@@ -167,10 +166,10 @@ const handelBuyGoods = async () => {
     })
 }
 
-onMounted(() => {
+onMounted(async () => {
   // 监听窗口resize事件
   window.addEventListener('resize', handleResize);
-  handelGetGoods(true)
+  await handelGetGoods(true)
   handleResize()
 })
 onBeforeMount(() => {
