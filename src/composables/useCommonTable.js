@@ -55,6 +55,7 @@ export function useCommonTable(opt = {}) {
 
     }
     const openRrawer = (goods) => {
+        imageUrl.value = ""
         drawerRef.value = true
         submitType.value = "new"
         if (goods) {

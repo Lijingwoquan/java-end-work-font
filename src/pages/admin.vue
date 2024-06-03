@@ -66,8 +66,6 @@
                 style="width: 100%;">确定</el-button>
         </div>
     </el-drawer>
-
-
 </template>
 
 <script setup>
@@ -123,6 +121,7 @@ const handleAvatarSuccess = (
 ) => {
     imageUrl.value = `${staticImg}${response.data.imgUrl}`
     form.imgUrl = imageUrl.value
+    toast("上传图片成功")
 }
 
 const beforeAvatarUpload = (rawFile) => {
