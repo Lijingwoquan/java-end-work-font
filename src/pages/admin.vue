@@ -1,7 +1,7 @@
 <template>
     <el-card style="max-width: 100%">
         <div class="flex justify-end mb-5">
-            <el-button type="primary" size="large" @click="openRrawer()">新增</el-button>
+            <el-button type="primary" size="large" @click="handelCreate">新增</el-button>
         </div>
         <el-table :data="data" stripe style="width: 100%" v-loading="tableLoading">
             <el-table-column prop="name" label="商品名称" />
@@ -28,7 +28,7 @@
             </el-table-column>
             <el-table-column prop="name" label="编辑">
                 <template #default="scope">
-                    <el-button type="primary" size="default" @click="openRrawer(scope.row)">编辑商品</el-button>
+                    <el-button type="primary" size="default" @click="handelUpdate(scope.row)">编辑商品</el-button>
                 </template>
             </el-table-column>
             <el-table-column prop="delete" label="状态">
@@ -43,9 +43,10 @@
                 :current-page="currentPage" :page-count="pageMax" @update:current-page="changePage" />
         </div>
     </el-card>
-    <el-drawer v-model="drawerRef" title="编辑" :destroy-on-close="true" direction="rtl" size="500px">
+
+    <el-drawer v-model="drawerRef" :title="drawerTitle" :destroy-on-close="true" direction="rtl" size="500px">
         <div class="flex flex-col justify-between" style="height: 100%;">
-            <el-form :model="form" ref="formRef" label-width="auto" class="space-y-10">
+            <el-form :model="form" ref="formRef" label-width="auto" class="space-y-10" :rules="rules">
                 <el-form-item label="商品名称" prop="name">
                     <el-input v-model="form.name" />
                 </el-form-item>
@@ -55,14 +56,14 @@
                 <el-form-item label="商品图片" prop="imgUrl">
                     <el-upload :action="uploadImgApi" class="avatar-uploader" name="img" :show-file-list="false"
                         :on-success="handleAvatarSuccess" :before-upload="beforeAvatarUpload">
-                        <img v-if="imageUrl" :src="imageUrl" class="avatar" />
+                        <img v-if="form.imgUrl" :src="form.imgUrl" class="avatar" />
                         <el-icon v-else class="avatar-uploader-icon">
                             <Plus />
                         </el-icon>
                     </el-upload>
                 </el-form-item>
             </el-form>
-            <el-button class="bottom-0" type="primary" size="large" @click="onSubmit"
+            <el-button class="bottom-0" type="primary" size="large" @click="handelSubmit"
                 style="width: 100%;">确定</el-button>
         </div>
     </el-drawer>
@@ -77,38 +78,71 @@ import {
     updateGoods,
     changeGoodsStatus,
 } from "~/api/manager.js";
-import { useCommonTable } from "~/composables/useCommonTable.js"
+import {
+    useInitTable,
+    useInitForm
+} from "~/composables/useCommonTable.js"
 import { useResize } from "~/composables/useResize.js"
 import {
     uploadImgApi,
     staticImg
 } from "/config";
+// table
 const {
     data,
-    form,
+    imageUrl,
     tableLoading,
-    formRef,
-    drawerRef,
     pageMax,
     currentPage,
     handelChangeStauts,
-    handelGetGoods,
-    openRrawer,
-    onSubmit,
+    getData,
     changePage,
-    imageUrl
-} = useCommonTable({
+} = useInitTable({
     getList: getGoods,
-    add: addGoods,
-    update: updateGoods,
     changeStatus: changeGoodsStatus
 })
+
+// form
+const {
+    form,
+    formRef,
+    drawerRef,
+    rules,
+    drawerTitle,
+    handelCreate,
+    handelUpdate,
+    handelSubmit
+} = useInitForm({
+    form: reactive({
+        name: "",
+        price: 0,
+        imgUrl: "",
+        id: 0
+    }),
+    getData: getData,
+    create: addGoods,
+    update: updateGoods,
+    rules: {
+        name: [{
+            required: true,
+            message: "商品名称不能为空",
+            tirgger: "blur"
+        }],
+        imgUrl: [{
+            required: true,
+            message: "商品图片不能为空",
+            tirgger: "blur"
+        }],
+    }
+})
+
 const tableColumn = reactive({
     height: "",
     width: "",
     mobile: "150px",
     computer: "200px"
 })
+
 const {
     handleResize
 } = useResize({
@@ -136,7 +170,7 @@ const beforeAvatarUpload = (rawFile) => {
 }
 
 onMounted(() => {
-    handelGetGoods(true)
+    getData(true)
     // 监听窗口resize事件
     window.addEventListener('resize', handleResize);
     handleResize()
@@ -145,7 +179,6 @@ onMounted(() => {
 onBeforeMount(() => {
     window.removeEventListener("resize", handleResize)
 })
-
 </script>
 
 <style scoped>

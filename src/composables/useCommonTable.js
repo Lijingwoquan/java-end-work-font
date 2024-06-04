@@ -1,24 +1,11 @@
-import { reactive, ref } from "vue"
+import { reactive, ref, computed } from "vue"
 import { toast } from "~/composables/util.js"
-export function useCommonTable(opt = {}) {
+
+// 列表 分页  删除 修改状态
+export function useInitTable(opt = {}) {
     const data = ref([])
-    const form = reactive({
-        name: "",
-        price: 0,
-        imgUrl: "",
-        id: 0
-    })
-    const defaultForm = reactive({
-        name: "",
-        price: 0,
-        imgUrl: "",
-        id: 0
-    })
     const imageUrl = ref('')
     const tableLoading = ref(true)
-    const submitType = ref("new")
-    const formRef = ref(null)
-    const drawerRef = ref(false)
     const pageMax = ref(0)
     const currentPage = ref(1)
     const handelChangeStauts = (status, id) => {
@@ -28,10 +15,10 @@ export function useCommonTable(opt = {}) {
             }).catch(() => {
                 toast("修改状态失败", "error")
             }).finally(() => {
-                handelGetGoods()
+                getData()
             })
     }
-    const handelGetGoods = async (flag) => {
+    const getData = async (flag) => {
         tableLoading.value = true
         data.value = []
         await setTimeout(() => {
@@ -49,63 +36,91 @@ export function useCommonTable(opt = {}) {
                 toast("加载失败", "error")
             }).finally(() => {
                 tableLoading.value = false
-                drawerRef.value = false
             })
         }, 500);
 
     }
-    const openRrawer = (goods) => {
-        imageUrl.value = ""
-        drawerRef.value = true
-        submitType.value = "new"
-        if (goods) {
-            imageUrl.value = goods.imgUrl
-            Object.assign(form, goods);
-            submitType.value = "update"
-        } else {
-            for (const key in defaultForm) {
-                form[key] = defaultForm[key]
-            }
-        }
-
-    }
-
-    const onSubmit = async () => {
-        if (submitType.value === "update") {
-            await opt.update(form).then(res => {
-                toast("修改成功")
-            }).catch(() => {
-                toast("修改失败", "error")
-            })
-        } else {
-            await opt.add(form).then(res => {
-                toast("添加成功")
-            }).catch(() => {
-                toast("添加失败", "error")
-            })
-        }
-        handelGetGoods()
-    }
-
     const changePage = (page) => {
         currentPage.value = page
-        handelGetGoods()
+        getData()
     }
     return {
         data,
-        form,
-        defaultForm,
+        imageUrl,
         tableLoading,
-        submitType,
-        formRef,
-        drawerRef,
         pageMax,
         currentPage,
         handelChangeStauts,
-        handelGetGoods,
-        openRrawer,
-        onSubmit,
+        getData,
         changePage,
-        imageUrl
+    }
+}
+
+// 新增 修改
+export function useInitForm(opt = {}) {
+    // 表单部分
+    const form = reactive({})
+    const formRef = ref(null)
+
+    // 表单默认值
+    const defaultForm = opt.form
+
+    const drawerRef = ref(false)
+
+    // 表单验证
+    const rules = opt.rules || {}
+    const editId = ref(0)
+    const drawerTitle = computed(() => editId.value ? "修改" : "新增")
+
+    // 提交表单
+    const handelSubmit = () => {
+        formRef.value.validate((valid) => {
+            if (!valid) return
+            const fun = editId.value ? opt.update(form) : opt.create(form)
+            fun.then(res => {
+                toast(drawerTitle.value + "成功")
+                opt.getData(editId ? null : 1)
+            })
+        })
+    }
+
+    // 重置表单
+    const resetForm = (row) => {
+        if (formRef.value) {
+            formRef.value.clearValidate()
+        }
+        for (const key in defaultForm) {
+            form[key] = row[key]
+        }
+    }
+
+    // 新建
+    const handelCreate = () => {
+        editId.value = 0
+        resetForm(defaultForm)
+        drawerRef.value = true
+    }
+
+    // 更新
+    const handelUpdate = (row) => {
+        console.log(row)
+        editId.value = row.id
+        resetForm(row)
+        drawerRef.value = true
+    }
+
+
+
+    return {
+        form,
+        formRef,
+        defaultForm,
+        drawerRef,
+        rules,
+        drawerTitle,
+        resetForm,
+        handelCreate,
+        handelUpdate,
+        handelSubmit
     }
 }

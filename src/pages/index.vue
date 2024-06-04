@@ -67,18 +67,17 @@ import { reactive, onMounted, onBeforeMount, ref } from "vue"
 import { toast } from "~/composables/util.js"
 import { getGoods } from "~/api/user.js";
 import { buyGoods } from "~/api/user.js";
-import { useCommonTable } from "~/composables/useCommonTable.js"
+import { useInitTable } from "~/composables/useCommonTable.js"
 import { useResize } from "~/composables/useResize.js"
 
 const {
   data,
   tableLoading,
-  drawerRef,
   pageMax,
   currentPage,
-  handelGetGoods,
-  changePage
-} = useCommonTable({
+  getData,
+  changePage,
+} = useInitTable({
   getList: getGoods,
 })
 
@@ -169,7 +168,7 @@ const handelBuyGoods = async () => {
 onMounted(async () => {
   // 监听窗口resize事件
   window.addEventListener('resize', handleResize);
-  await handelGetGoods(true)
+  await getData(true)
   handleResize()
 })
 onBeforeMount(() => {
