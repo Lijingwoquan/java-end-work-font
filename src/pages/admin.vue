@@ -1,20 +1,28 @@
 <template>
     <el-card style="max-width: 100%">
         <div class="flex justify-end mb-5">
-            <el-button type="primary" size="large" @click="handelCreate">新增</el-button>
+            <div>
+                <el-button type="primary" size="large" @click="handelCreate">新增</el-button>
+            </div>
         </div>
         <el-table :data="data" stripe style="width: 100%" v-loading="tableLoading">
-            <el-table-column prop="name" label="商品名称" />
+            <el-table-column prop="name" label="商品名称">
+                <template #default="scope">
+                    <div class="table-name">
+                        {{ scope.row.name }}
+                    </div>
+                </template>
+            </el-table-column>
             <el-table-column prop="price" label="商品价格">
                 <template #default="scope">
-                    <div class="flex items-center text-lg" style="height: 100%;width: 100%;color: rgb(48, 48, 169);">
+                    <div class="table-price">
                         {{ scope.row.price }}
                     </div>
                 </template>
             </el-table-column>
             <el-table-column prop="count" label="商品销量">
                 <template #default="scope">
-                    <div class="flex items-center text-lg" style="height: 100%;width: 100%;color: rgb(48, 48, 169);">
+                    <div class="table-count">
                         {{ scope.row.count }}
                     </div>
                 </template>
@@ -43,7 +51,6 @@
                 :current-page="currentPage" :page-count="pageMax" @update:current-page="changePage" />
         </div>
     </el-card>
-
     <el-drawer v-model="drawerRef" :title="drawerTitle" :destroy-on-close="true" direction="rtl" size="500px">
         <div class="flex flex-col justify-between" style="height: 100%;">
             <el-form :model="form" ref="formRef" label-width="auto" class="space-y-10" :rules="rules">
@@ -70,7 +77,7 @@
 </template>
 
 <script setup>
-import { reactive, onMounted, onBeforeMount } from "vue"
+import { reactive, onMounted, onBeforeMount, ref } from "vue"
 import { getGoods } from "~/api/manager.js"
 import { toast } from "~/composables/util.js"
 import {
@@ -169,15 +176,22 @@ const beforeAvatarUpload = (rawFile) => {
     return true
 }
 
+const onKeyUp = (e) => {
+    if (e.key == "Enter") {
+        searchMsg()
+    }
+}
+
 onMounted(() => {
     getData(true)
-    // 监听窗口resize事件
-    window.addEventListener('resize', handleResize);
     handleResize()
+    window.addEventListener('resize', handleResize);
+    document.addEventListener("keyup", onKeyUp)
 })
 
 onBeforeMount(() => {
     window.removeEventListener("resize", handleResize)
+    document.removeEventListener("keyup", onKeyUp)
 })
 </script>
 
@@ -209,6 +223,33 @@ onBeforeMount(() => {
 </style>
 
 <style>
+    .table-name {
+        font-weight: 500;
+        text-shadow: 2px 2px 3px rgba(255, 255, 255, 0.5);
+        background: linear-gradient(to right bottom, rgb(71, 108, 183), rgb(131, 85, 174), rgb(207, 50, 128));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 16px;
+    }
+
+    .table-price {
+        font-weight: 600;
+        text-shadow: 2px 2px 3px rgba(255, 255, 255, 0.5);
+        background: linear-gradient(to top, rgb(46, 98, 194), rgb(201, 95, 127), rgb(162, 88, 184));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 16px;
+    }
+
+    .table-count {
+        font-weight: 700;
+        background: linear-gradient(to bottom, rgba(88, 121, 186, 0.82), rgb(148, 139, 93), rgba(35, 65, 199, 0.532));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 16px;
+    }
+
+
     .avatar-uploader .el-upload {
         border: 1px dashed var(--el-border-color);
         border-radius: 6px;

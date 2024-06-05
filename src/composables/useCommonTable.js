@@ -1,13 +1,15 @@
 import { reactive, ref, computed } from "vue"
 import { toast } from "~/composables/util.js"
 
-// 列表 分页  删除 修改状态
+// 列表 搜索 分页  修改状态
 export function useInitTable(opt = {}) {
     const data = ref([])
     const imageUrl = ref('')
     const tableLoading = ref(true)
     const pageMax = ref(0)
     const currentPage = ref(1)
+    const inputValue = ref("")
+
     const handelChangeStauts = (status, id) => {
         opt.changeStatus(id, status)
             .then(() => {
@@ -18,6 +20,7 @@ export function useInitTable(opt = {}) {
                 getData()
             })
     }
+
     const getData = async (flag) => {
         tableLoading.value = true
         data.value = []
@@ -38,12 +41,13 @@ export function useInitTable(opt = {}) {
                 tableLoading.value = false
             })
         }, 500);
-
     }
+
     const changePage = (page) => {
         currentPage.value = page
         getData()
     }
+
     return {
         data,
         imageUrl,
@@ -103,7 +107,6 @@ export function useInitForm(opt = {}) {
 
     // 更新
     const handelUpdate = (row) => {
-        console.log(row)
         editId.value = row.id
         resetForm(row)
         drawerRef.value = true

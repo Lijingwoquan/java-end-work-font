@@ -1,9 +1,11 @@
 <template>
     <div class="Headercontainer">
         <div class="left">
-            <el-icon class="logoHouse" :size="sizeObj.iconSize">
-                <Discount />
+            <el-icon class="logoHouse" @click="changePage" :size="sizeObj.iconSize">
+                <component :is="icon">
+                </component>
             </el-icon>
+
         </div>
 
         <div class="middle">
@@ -11,11 +13,7 @@
         </div>
 
         <div class="right">
-            <div class="search" @click="openSearch">
-                <el-icon :size="sizeObj.iconSize">
-                    <search />
-                </el-icon>
-            </div>
+          
             <el-dropdown>
                 <div class="help">
                     <div class="text">帮助</div>
@@ -38,7 +36,32 @@
 
 
 <script setup>
-import { reactive, onMounted, onBeforeMount } from "vue"
+import { reactive, onMounted, onBeforeMount, computed, watch, ref } from "vue"
+import { useRouter, useRoute } from 'vue-router';
+
+
+const router = useRouter()
+const route = useRoute()
+
+const icon = ref("User")
+const pageRoute = ref("/admin")
+
+watch(
+    () => route.path,
+    () => {
+        pageRoute.value = "/admin"
+        icon.value = "User"
+        if (route.path == "/admin") {
+            pageRoute.value = "/"
+            icon.value = "Hide"
+        }
+    }
+)
+
+const changePage = () => {
+    router.push(pageRoute.value)
+}
+
 const sizeObj = reactive({
     textSize: "",
     iconSize: ""
@@ -104,9 +127,6 @@ onBeforeMount(() => {
         width: 100px;
     }
 
-    .Headercontainer .right .search {
-        @apply flex justify-center items-center mr-3 hover:cursor-pointer;
-    }
 
     .Headercontainer .right .help {
         @apply flex justify-center items-center mr-1 hover:cursor-pointer;

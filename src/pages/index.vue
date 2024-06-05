@@ -3,10 +3,10 @@
     <div class="goodsList" v-loading="tableLoading" :class="[sizeObj.textSize]">
       <el-card class="goods" :style="goodsSize" v-for="(item, index) in data" :key="index">
         <div class="goods-info">
-          <div class="name">
+          <div class="goods-name table-name">
             {{ item.name }}
           </div>
-          <div class="price">
+          <div class="goods-price table-price">
             {{ item.price }}元
           </div>
         </div>
@@ -16,7 +16,7 @@
         <div class="goods-button">
           <el-button type="primary" :size="sizeObj.btnSize" @click="pushCar(item)">加入购物车</el-button>
         </div>
-        <div class="goods-times" :style="goodsTimes">
+        <div class="goods-times table-count" :style="goodsTimes">
           {{ item.count }}
         </div>
       </el-card>
@@ -28,6 +28,7 @@
     </div>
   </el-card>
 
+
   <div class="car-icon" @click="displayCar">
     <el-icon :size="sizeObj.iconSize">
       <ShoppingCartFull />
@@ -35,7 +36,7 @@
   </div>
 
   <el-drawer style="background:linear-gradient(to right top, rgb(79, 169, 214), rgb(132, 223, 159)) !important;"
-    v-model="drawerRef" title="编辑" direction="btt" size="500px">
+    v-model="drawerRef" title="购物车清单" direction="btt" size="500px">
     <div class="car-goods" v-for="(item, index) in carGoods" :key="index">
       <div class="car-goods-info" :class="sizeObj.textSize" style="width:90%;">
         <div class="car-goods-name" style="width: 20%;">
@@ -70,6 +71,8 @@ import { buyGoods } from "~/api/user.js";
 import { useInitTable } from "~/composables/useCommonTable.js"
 import { useResize } from "~/composables/useResize.js"
 
+const drawerRef = ref(null)
+
 const {
   data,
   tableLoading,
@@ -93,6 +96,7 @@ const goodsTimes = reactive({
   mobile: "30px",
   computer: "34px"
 })
+
 const {
   sizeObj,
   handleResize
@@ -100,6 +104,7 @@ const {
   item: goodsSize,
   corner: goodsTimes,
 })
+
 const carGoods = ref([])
 
 const pushCar = (item) => {
@@ -206,14 +211,12 @@ onBeforeMount(() => {
 
   .goods-info .name {
     @apply inline-block;
-    color: rgb(92, 98, 188);
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: auto;
   }
 
   .goods-info .price {
-    color: rgb(186, 76, 46);
   }
 
   .goods-img {
@@ -240,13 +243,9 @@ onBeforeMount(() => {
     @apply absolute flex justify-center items-center;
     bottom: 0px;
     right: 0px;
-    color: rgba(217, 22, 181, 0.829);
-    background-color: rgba(202, 213, 241, 0.53);
     border: 1px solid rgb(185, 98, 98);
     border-radius: 50%;
-
   }
-
 
   .car-icon {
     @apply fixed;
