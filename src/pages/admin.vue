@@ -166,12 +166,13 @@ const handleAvatarSuccess = (
 }
 
 const beforeAvatarUpload = (rawFile) => {
-    if (rawFile.type !== 'image/jpeg') {
-        toast("上传文件格式必须为image/jpeg", "error")
-        return false
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    if (!allowedTypes.includes(rawFile.type)) {
+        toast("上传文件格式必须为jpeg, png或gif", "error");
+        return false;
     } else if (rawFile.size / 1024 / 1024 > 5) {
-        toast("上传文件大小必须小于5MB", "error")
-        return false
+        toast("上传文件大小必须小于5MB", "error");
+        return false;
     }
     return true
 }
