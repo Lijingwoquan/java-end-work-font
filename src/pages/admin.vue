@@ -51,7 +51,8 @@
                 :current-page="currentPage" :page-count="pageMax" @update:current-page="changePage" />
         </div>
     </el-card>
-    <el-drawer v-model="drawerRef" :title="drawerTitle" :destroy-on-close="true" direction="rtl" size="500px">
+    <el-drawer v-model="drawerRef" :title="drawerTitle" :destroy-on-close="true" direction="rtl"
+        :size="drawerSize.width">
         <div class="flex flex-col justify-between" style="height: 100%;">
             <el-form :model="form" ref="formRef" label-width="auto" class="space-y-10" :rules="rules">
                 <el-form-item label="商品名称" prop="name">
@@ -150,6 +151,20 @@ const tableColumn = reactive({
     computer: "200px"
 })
 
+const drawerSize = reactive({
+    height: "",
+    width: "",
+    mobile: "300px",
+    computer: "500px"
+})
+
+const {
+    handleResize: handleResizex,
+} = useResize({
+    item: drawerSize,
+})
+
+
 const {
     handleResize
 } = useResize({
@@ -186,12 +201,15 @@ const onKeyUp = (e) => {
 onMounted(() => {
     getData(true)
     handleResize()
+    handleResizex()
     window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResizex)
     document.addEventListener("keyup", onKeyUp)
 })
 
 onBeforeMount(() => {
     window.removeEventListener("resize", handleResize)
+    window.removeEventListener("resize", handleResizex)
     document.removeEventListener("keyup", onKeyUp)
 })
 </script>
@@ -226,19 +244,15 @@ onBeforeMount(() => {
 <style>
     .table-name {
         font-weight: 500;
-        text-shadow: 2px 2px 3px rgba(255, 255, 255, 0.5);
-        background: linear-gradient(to right bottom, rgb(71, 108, 183), rgb(131, 85, 174), rgb(207, 50, 128));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        text-shadow: 3px 3px 3px rgba(39, 142, 187, 0.5);
         font-size: 16px;
+        color: rgb(71, 108, 183);
     }
 
     .table-price {
         font-weight: 600;
-        text-shadow: 2px 2px 3px rgba(255, 255, 255, 0.5);
-        background: linear-gradient(to top, rgb(46, 98, 194), rgb(201, 95, 127), rgb(162, 88, 184));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        text-shadow: 3px 3px 3px rgba(55, 98, 192, 0.5);
+        color: rgb(84, 111, 164);
         font-size: 16px;
     }
 

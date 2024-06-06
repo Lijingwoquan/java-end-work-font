@@ -2,12 +2,12 @@
   <el-card style="max-width: 100%">
     <div class="goodsList" v-loading="tableLoading" :class="[sizeObj.textSize]">
       <el-card class="goods" :style="goodsSize" v-for="(item, index) in data" :key="index">
-        <div class="goods-info">
-          <div class="goods-name table-name">
+        <div class="goods-info" style="height: 20%;">
+          <div class="name table-name" style="width: 50%;">
             {{ item.name }}
           </div>
-          <div class="goods-price table-price">
-            {{ item.price }}元
+          <div class="price table-price" style="width: 50%;">
+            <span style="float: right;">{{ item.price }}元</span>
           </div>
         </div>
         <div class="goods-img">
@@ -38,24 +38,21 @@
   <el-drawer style="background:linear-gradient(to right top, rgb(79, 169, 214), rgb(132, 223, 159)) !important;"
     v-model="drawerRef" title="购物车清单" direction="btt" size="500px">
     <div class="car-goods" v-for="(item, index) in carGoods" :key="index">
-      <div class="car-goods-info" :class="sizeObj.textSize" style="width:90%;">
-        <div class="car-goods-name" style="width: 20%;">
+      <div class="car-goods-info" :class="sizeObj.textSize" style="width:95%;">
+        <div class="car-goods-name " style="width: 30%;">
           {{ item.name }}
         </div>
         <div>
-          <div>
-            数量
-            <el-input-number class="ml-2" :size="sizeObj.btnSize" v-model="item.count" :min="0"
-              @change="handleCountChange(item)" />
+          <el-input-number class="ml-2" v-model="item.count" :min="0" :max="50" @change="handleCountChange(item)" />
+        </div>
+        <div class="flex flex-col ml-1" style="width: 30%; ">
+          <div class="car-goods-total">
+            {{ item.totalPrice }}元
           </div>
         </div>
-        <div style="width: 20%;">
-          总价 {{ item.totalPrice }}元
-        </div>
-
       </div>
     </div>
-    <div class="flex justify-center items-center" key="btn" style="width: 100%;">
+    <div class=" flex justify-center items-center" key="btn" style="width: 100%;">
       <el-button class="buy-button mt-1" type="primary" @click="handelBuyGoods">
         购买
       </el-button>
@@ -64,7 +61,7 @@
 </template>
 
 <script setup>
-import { reactive, onMounted, onBeforeMount, ref } from "vue"
+import { reactive, onMounted, onBeforeMount, ref, computed, watch } from "vue"
 import { toast } from "~/composables/util.js"
 import { getGoods } from "~/api/user.js";
 import { buyGoods } from "~/api/user.js";
@@ -107,6 +104,14 @@ const {
 
 const carGoods = ref([])
 
+watch(
+  () => carGoods.value.length,
+  () => {
+    if (carGoods.value.length == 0) {
+      drawerRef.value = false
+    }
+  })
+
 const pushCar = (item) => {
   let dataItem = data.value.find(goods => goods.id === item.id);
   dataItem.count = (dataItem.count || 0) + 1;
@@ -123,13 +128,20 @@ const pushCar = (item) => {
 }
 
 const handleCountChange = (item) => {
+  if (item.count >= 50) {
+    toast("超过单次购买限制", "warning")
+    item.count = 50;
+  }
+
   carGoods.value = carGoods.value.filter((item) => item.count > 0)
   //同步数据
   data.value.forEach(goods => {
     if (goods.id === item.id) {
       goods.count = item.count
       const existingItem = carGoods.value.find(goods => goods.id === item.id)
-      existingItem.totalPrice = existingItem.price * existingItem.count
+      if (existingItem) {
+        existingItem.totalPrice = existingItem.price * existingItem.count
+      }
     }
   })
 }
@@ -143,31 +155,35 @@ const displayCar = () => {
 }
 
 const handelBuyGoods = async () => {
-  buyGoods(carGoods.value)
-    .then(async (res) => {
-      toast("购买成功")
-      carGoods.value = []
-      await new Promise(resolve => setTimeout(resolve, 300))
-      drawerRef.value = false
-      const promises = data.value.map((item) => {
-        const { count } = item
-        return new Promise((resolve) => {
-          const interval = setInterval(() => {
-            if (item.count > 0) {
-              item.count--
-            }
-            if (item.count === 0) {
-              clearInterval(interval)
-              resolve()
-            }
-          }, 80)
+  if (carGoods.value.length > 0) {
+    buyGoods(carGoods.value)
+      .then(async (res) => {
+        toast("购买成功")
+        carGoods.value = []
+        await new Promise(resolve => setTimeout(resolve, 300))
+        drawerRef.value = false
+        const promises = data.value.map((item) => {
+          const { count } = item
+          return new Promise((resolve) => {
+            const interval = setInterval(() => {
+              if (item.count > 0) {
+                item.count--
+              }
+              if (item.count === 0) {
+                clearInterval(interval)
+                resolve()
+              }
+            }, 80)
+          })
         })
+        await Promise.all(promises)
       })
-      await Promise.all(promises)
-    })
-    .catch(err => {
-      toast("购买失败", "error")
-    })
+      .catch(err => {
+        toast("购买失败", "error")
+      })
+  } else {
+    toast("购物车为空", "warning")
+  }
 }
 
 onMounted(async () => {
@@ -203,7 +219,7 @@ onBeforeMount(() => {
   }
 
   .goods-info {
-    @apply flex justify-between;
+    @apply inline-flex justify-around;
     width: 100%;
     height: 20%;
     margin-bottom: 5px
@@ -212,11 +228,13 @@ onBeforeMount(() => {
   .goods-info .name {
     @apply inline-block;
     white-space: nowrap;
-    text-overflow: ellipsis;
     overflow: auto;
   }
 
   .goods-info .price {
+    @apply inline-block;
+    white-space: nowrap;
+    overflow: auto;
   }
 
   .goods-img {
@@ -262,19 +280,30 @@ onBeforeMount(() => {
   }
 
   .car-goods-info {
-    @apply flex items-center justify-between space-x-2;
+    @apply flex items-center justify-around space-x-2;
   }
 
   .car-goods-name {
     @apply inline-block;
     white-space: nowrap;
-    text-overflow: ellipsis;
     overflow: auto;
   }
 
+  .car-goods-total {
+    @apply inline-block;
+    white-space: nowrap;
+    overflow: auto;
+  }
 
   .buy-button {
     @apply text-light-300 hover:text-red-900 !important;
   }
 
+  /* 为 WebKit 内核浏览器(Chrome/Safari)设置 */
+  ::-webkit-scrollbar {
+    width: 0;
+    /* 横向滚动条宽度 */
+    height: 0;
+    /* 纵向滚动条高度 */
+  }
 </style>

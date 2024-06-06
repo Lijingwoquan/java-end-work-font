@@ -42,6 +42,6 @@ export function useResize(obj = {}) {
 
     return {
         sizeObj,
-        handleResize
+        handleResize:handleResize,
     }
 }
